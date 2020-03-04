@@ -1,6 +1,7 @@
 package com.picker.zzImagePicker;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.media.MediaMetadataRetriever;
@@ -21,6 +22,7 @@ import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.WritableNativeArray;
 import com.facebook.react.bridge.WritableNativeMap;
+
 import com.luck.picture.lib.PictureSelector;
 import com.luck.picture.lib.config.PictureConfig;
 import com.luck.picture.lib.config.PictureMimeType;
@@ -28,9 +30,11 @@ import com.luck.picture.lib.entity.LocalMedia;
 import com.luck.picture.lib.listener.OnResultCallbackListener;
 import com.luck.picture.lib.tools.PictureFileUtils;
 import com.picker.R;
+import com.vincent.videocompressor.VideoCompress;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -43,11 +47,13 @@ public class ZZImagePicker extends ReactContextBaseJavaModule {
     private static final String TAG = "ZZImagePicker";
     private Promise mPickerPromise;
     private ReactApplicationContext reactContext;
-
+    private  LoadingDialog loadingDialog;
     public ZZImagePicker(@NonNull ReactApplicationContext reactContext) {
         super(reactContext);
         this.reactContext = reactContext;
         reactContext.addActivityEventListener(mActivityEventListener);
+
+
 
     }
 
@@ -131,35 +137,80 @@ public class ZZImagePicker extends ReactContextBaseJavaModule {
                     ZZImagePicker.this.mPickerPromise.resolve(videoList);
                 } else if (requestCode == PictureConfig.REQUEST_CAMERA) {
                     Log.i(TAG, "onActivityResult: 333");
+                    loadingDialog = LoadingDialog.getInstance(getCurrentActivity());
+                    loadingDialog.show();
 
-                    List<LocalMedia> mVideoSelectList = PictureSelector.obtainMultipleResult(data);
-                    WritableMap videoMap = new WritableNativeMap();
+                    new Thread(){
+                        @Override
+                        public void run() {
+                            super.run();
+                            List<LocalMedia> mVideoSelectList = PictureSelector.obtainMultipleResult(data);
+                            WritableMap videoMap = new WritableNativeMap();
+                            LocalMedia media = mVideoSelectList.get(0);
+                            Log.i(TAG, "视频路径 " + media.getPath());
 
-                    LocalMedia media = mVideoSelectList.get(0);
-                    Log.i(TAG, "视频路径 " + media.getPath());
-                    MediaMetadataRetriever media1 = new MediaMetadataRetriever();
-                    media1.setDataSource(media.getPath());
-                    Bitmap bitmap = media1.getFrameAtTime();
-                    Calendar now = new GregorianCalendar();
-                    SimpleDateFormat simpleDate = new SimpleDateFormat("yyyyMMddHHmmss", Locale.getDefault());
-                    String fileName = simpleDate.format(now.getTime());
-                    String dir = Environment.getExternalStorageDirectory().toString();
-                    String PACKAGE_NAME = reactContext.getPackageName();
-                    dir = dir +  "/Android/data/" + PACKAGE_NAME+"/files/Pictures/";
-                    Log.i(TAG, "视频封面地址 "+dir);
-                    try {
-                        File file = new File(dir + fileName + ".jpg");
-                        FileOutputStream out = new FileOutputStream(file);
-                        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
-                        out.flush();
-                        out.close();
-                        videoMap.putString("coverImage","file://" + file.toString());
-                        videoMap.putString("videoPath","file://" + media.getPath());
-                        ZZImagePicker.this.mPickerPromise.resolve(videoMap);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        ZZImagePicker.this.mPickerPromise.reject("-5", "获取视频封面失败");
-                    }
+
+                            Calendar now = new GregorianCalendar();
+                            SimpleDateFormat simpleDate = new SimpleDateFormat("yyyyMMddHHmmss", Locale.getDefault());
+                            String fileName = simpleDate.format(now.getTime());
+                            String dir = Environment.getExternalStorageDirectory().toString();
+                            String PACKAGE_NAME = reactContext.getPackageName();
+                            dir = Environment.getExternalStorageDirectory().toString() +  "/Android/data/" + PACKAGE_NAME+"/files/Pictures/";
+                            checkFolderExists(dir);
+                            String compressDir = Environment.getExternalStorageDirectory().toString() +  "/Android/data/" + PACKAGE_NAME+"/files/videos/";
+                            checkFolderExists(compressDir);
+                            final String coverDir = dir;
+                            final String compressVideoPath = compressDir + fileName + ".mp4";
+                            VideoCompress.compressVideoMedium(media.getPath(), compressVideoPath, new VideoCompress.CompressListener() {
+                                @Override
+                                public void onStart() {
+                                    Log.i(TAG, "onStart: ");
+                                }
+
+                                @Override
+                                public void onSuccess() {
+                                    Log.i(TAG, "压缩成功" + compressVideoPath);
+                                    try {
+                                        MediaMetadataRetriever media1 = new MediaMetadataRetriever();
+                                        media1.setDataSource(media.getPath());
+                                        Bitmap bitmap = media1.getFrameAtTime();
+                                        File file = new File(coverDir + fileName + ".jpg");
+                                        Log.i(TAG, "视频封面地址 "+file.toString());
+                                        FileOutputStream out = new FileOutputStream(file);
+                                        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
+                                        out.flush();
+                                        out.close();
+                                        videoMap.putString("coverImage","file://" + file.toString());
+                                        videoMap.putString("videoPath","file://" + compressVideoPath);
+                                        ZZImagePicker.this.mPickerPromise.resolve(videoMap);
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                        ZZImagePicker.this.mPickerPromise.reject("-5", "获取视频封面失败");
+                                    }finally {
+                                        loadingDialog.dismiss();
+
+                                    }
+
+                                }
+
+                                @Override
+                                public void onFail() {
+                                    loadingDialog.dismiss();
+
+                                    Log.i(TAG, "onFail:");
+                                    ZZImagePicker.this.mPickerPromise.reject("-6", "压缩视频失败");
+
+                                }
+
+                                @Override
+                                public void onProgress(float percent) {
+
+                                }
+                            });
+
+
+                        }
+                    }.start();
 
 
                 }
@@ -170,6 +221,17 @@ public class ZZImagePicker extends ReactContextBaseJavaModule {
 
         }
     };
+
+    private void checkFolderExists(String strFolder)
+    {
+        File file = new File(strFolder);
+        if (!file.exists())
+        {
+            file.mkdir();
+        }
+
+    }
+
 
 
 }
