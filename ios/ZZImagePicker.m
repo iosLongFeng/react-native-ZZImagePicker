@@ -9,6 +9,7 @@
 #import "ZZImagePicker.h"
 #import <TZImagePickerController.h>
 #import "CompressImageTool.h"
+#import <SVProgressHUD.h>
 @interface ZZImagePicker()<TZImagePickerControllerDelegate>
 @property(nonatomic,strong)TZImagePickerController* imagePickerVc;
 /**
@@ -149,7 +150,7 @@ RCT_REMAP_METHOD(pickVideo,
 }
 
 - (void)imagePickerController:(TZImagePickerController *)picker didFinishPickingVideo:(UIImage *)coverImage sourceAssets:(PHAsset *)asset{
-  
+  [SVProgressHUD showWithStatus:@"正在导出视频..."];
   // open this code to send video / 打开这段代码发送视频
   [[TZImageManager manager] getVideoOutputPathWithAsset:asset presetName:AVAssetExportPresetMediumQuality success:^(NSString *outputPath) {
     // NSData *data = [NSData dataWithContentsOfFile:outputPath];
@@ -165,18 +166,23 @@ RCT_REMAP_METHOD(pickVideo,
     BOOL result =[UIImagePNGRepresentation(coverImage) writeToFile:filePath   atomically:YES]; // 保存成功会返回YES
     if (result == YES) {
       NSLog(@"视频封面保存成功");
+      NSLog(@"视频导出到本地完成,沙盒路径为:%@",outputPath);
+        self.resolveBlock(@{@"coverImage":filePath,@"videoPath":outputPath});
+        self.resolveBlock = nil;
+    }else{
+      if(self.rejectBlock){
+            self.rejectBlock(@"-5", @"封面保存失败", nil);
+            self.rejectBlock = nil;
+          }
     }
-    NSLog(@"视频导出到本地完成,沙盒路径为:%@",outputPath);
-    self.resolveBlock(@{@"coverImage":filePath,@"videoPath":outputPath});
-    self.resolveBlock = nil;
-    // Export completed, send video here, send by outputPath or NSData
-    // 导出完成，在这里写上传代码，通过路径或者通过NSData上传
+    [SVProgressHUD dismiss];
   } failure:^(NSString *errorMessage, NSError *error) {
     NSLog(@"视频导出失败:%@,error:%@",errorMessage, error);
     if(self.rejectBlock){
        self.rejectBlock(@"-4", @"视频导出失败", nil);
        self.rejectBlock = nil;
      }
+    [SVProgressHUD dismiss];
   }];
 }
 

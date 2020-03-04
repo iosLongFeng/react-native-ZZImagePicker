@@ -217,6 +217,7 @@ PODS:
     - React-cxxreact (= 0.61.5)
     - React-jsi (= 0.61.5)
     - ReactCommon/jscallinvoker (= 0.61.5)
+  - SVProgressHUD (2.2.5)
   - TZImagePickerController (3.3.1)
   - Yoga (1.14.0)
 
@@ -248,12 +249,14 @@ DEPENDENCIES:
   - React-RCTVibration (from `../node_modules/react-native/Libraries/Vibration`)
   - ReactCommon/jscallinvoker (from `../node_modules/react-native/ReactCommon`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
+  - SVProgressHUD
   - TZImagePickerController
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
 SPEC REPOS:
   trunk:
     - boost-for-react-native
+    - SVProgressHUD
     - TZImagePickerController
 
 EXTERNAL SOURCES:
@@ -334,9 +337,10 @@ SPEC CHECKSUMS:
   React-RCTText: 9ccc88273e9a3aacff5094d2175a605efa854dbe
   React-RCTVibration: a49a1f42bf8f5acf1c3e297097517c6b3af377ad
   ReactCommon: 198c7c8d3591f975e5431bec1b0b3b581aa1c5dd
+  SVProgressHUD: 1428aafac632c1f86f62aa4243ec12008d7a51d6
   TZImagePickerController: 99f03b64145a8c92c55b9b1b931410967d9be4cb
   Yoga: f2a7cd4280bfe2cca5a7aed98ba0eb3d1310f18b
 
-PODFILE CHECKSUM: 433e3cf02d3ac73569b45b2e3d7fc70d179c5ae1
+PODFILE CHECKSUM: 83ce0da5603685f5831d61f33b2b3eb639cc2151
 
 COCOAPODS: 1.8.4

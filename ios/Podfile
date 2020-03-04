@@ -2,7 +2,8 @@ platform :ios, '9.0'
 require_relative '../node_modules/@react-native-community/cli-platform-ios/native_modules'
 
 target 'Picker' do
-  pod 'TZImagePickerController' 
+  pod 'TZImagePickerController'
+  pod 'SVProgressHUD'
   # Pods for Picker
   pod 'FBLazyVector', :path => "../node_modules/react-native/Libraries/FBLazyVector"
   pod 'FBReactNativeSpec', :path => "../node_modules/react-native/Libraries/FBReactNativeSpec"

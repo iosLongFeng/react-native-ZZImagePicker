@@ -2,6 +2,7 @@ package com.picker.zzImagePicker;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.media.MediaMetadataRetriever;
@@ -96,6 +97,46 @@ public class ZZImagePicker extends ReactContextBaseJavaModule {
                 .loadImageEngine(GlideEngine.createGlideEngine())
                 .forResult(PictureConfig.REQUEST_CAMERA);
 
+
+    }
+
+    public static void clearCache(Context context){
+        Log.i(TAG, "clearCache: 111");
+        PictureFileUtils.deleteCacheDirFile(context, PictureMimeType.ofImage());
+        PictureFileUtils.deleteCacheDirFile(context, PictureMimeType.ofVideo());
+        //清除所有缓存实例：压缩，缩小，视频，音频所生成的临时文件
+        PictureFileUtils.deleteAllCacheDirFile(context);
+        String PACKAGE_NAME = context.getPackageName();
+        String  dir = Environment.getExternalStorageDirectory().toString() +  "/Android/data/" + PACKAGE_NAME+"/files/Pictures";
+        File cutDir = new File(dir);
+        Log.i(TAG, "clearCache: 222");
+        if (cutDir != null) {
+            Log.i(TAG, "clearCache: 3333");
+            File[] files = cutDir.listFiles();
+            if (files != null) {
+                for (File file : files) {
+                    if (file.isFile()) {
+                        Log.i(TAG, "clearCache: ");
+                        file.delete();
+                    }
+                }
+            }
+        }
+
+        dir = Environment.getExternalStorageDirectory().toString() +  "/Android/data/" + PACKAGE_NAME+"/files/videos";
+        cutDir = new File(dir);
+        if (cutDir != null) {
+            Log.i(TAG, "clearCache: ");
+            File[] files = cutDir.listFiles();
+            if (files != null) {
+                for (File file : files) {
+                    if (file.isFile()) {
+                        Log.i(TAG, "clearCache: ");
+                        file.delete();
+                    }
+                }
+            }
+        }
 
     }
 
