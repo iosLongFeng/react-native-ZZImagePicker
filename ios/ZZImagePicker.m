@@ -22,6 +22,8 @@
 @property (nonatomic, copy) RCTPromiseRejectBlock rejectBlock;
 
 @property (nonatomic, assign) int maxVideoTime;
+
+@property(nonatomic,strong)NSMutableDictionary<NSString*,PHAsset*>*assetDic;
 @end
 @implementation ZZImagePicker
 
@@ -64,6 +66,23 @@ RCT_REMAP_METHOD(pickVideo,
   
 }
 
+RCT_REMAP_METHOD(zipVideo,
+                 options:(NSString *)zipUrl
+                 zipVideoPickerResolver:(RCTPromiseResolveBlock)resolve
+                 rejecter:(RCTPromiseRejectBlock)reject) {
+
+  NSLog(@"zipVideo");
+ 
+  [[TZImageManager manager] getVideoOutputPathWithAsset:_assetDic[zipUrl] presetName:AVAssetExportPresetMediumQuality success:^(NSString *outputPath) {
+    resolve(outputPath);
+   
+  } failure:^(NSString *errorMessage, NSError *error) {
+    reject(@"-10",@"压缩失败",nil);
+  }];
+
+}
+
+
 -(TZImagePickerController *)imagePickerVc{
   if(_imagePickerVc==nil){
     _imagePickerVc = [[TZImagePickerController alloc] initWithMaxImagesCount:1 delegate:self];
@@ -73,12 +92,13 @@ RCT_REMAP_METHOD(pickVideo,
     _imagePickerVc.allowCameraLocation = NO;
     _imagePickerVc.preferredLanguage = @"zh-Hans";
     _maxVideoTime = 120;
+    _assetDic = [NSMutableDictionary dictionary];
   }
   return _imagePickerVc;
 }
 
 +(void)clearCache{
-
+  
   NSDirectoryEnumerator *enumerator = [[NSFileManager defaultManager] enumeratorAtPath:NSTemporaryDirectory()];
   for (NSString *fileName in enumerator) {
     [[NSFileManager defaultManager] removeItemAtPath:[NSTemporaryDirectory() stringByAppendingPathComponent:fileName] error:nil];
@@ -149,41 +169,72 @@ RCT_REMAP_METHOD(pickVideo,
   
 }
 
-- (void)imagePickerController:(TZImagePickerController *)picker didFinishPickingVideo:(UIImage *)coverImage sourceAssets:(PHAsset *)asset{
-  [SVProgressHUD showWithStatus:@"正在导出视频..."];
-  // open this code to send video / 打开这段代码发送视频
-  [[TZImageManager manager] getVideoOutputPathWithAsset:asset presetName:AVAssetExportPresetMediumQuality success:^(NSString *outputPath) {
-    // NSData *data = [NSData dataWithContentsOfFile:outputPath];
-    NSArray* arr = [outputPath componentsSeparatedByString:@"/"];
+- (void)imagePickerController:(TZImagePickerController *)picker didFinishPickingVideo:(UIImage *)coverImage sourceAssets:(PHAsset *)outAsset{
+  
+  PHVideoRequestOptions* options = [[PHVideoRequestOptions alloc] init];
+  options.deliveryMode = PHVideoRequestOptionsDeliveryModeAutomatic;
+  PHImageManager *manager = [PHImageManager defaultManager];
+  [manager requestAVAssetForVideo:outAsset options:options resultHandler:^(AVAsset * _Nullable asset, AVAudioMix * _Nullable audioMix, NSDictionary * _Nullable info) {
+    AVURLAsset *urlAsset = (AVURLAsset *)asset;
+    NSURL *url = urlAsset.URL;
+
+    NSLog(@"%@",url.absoluteString);
+    NSArray* arr = [url.path componentsSeparatedByString:@"/"];
     NSString* videoName = arr.lastObject;
     arr = [videoName componentsSeparatedByString:@"."];
     NSString* timeStamp = [self getNowTimeTimestamp];
     NSString* name = [NSString stringWithFormat:@"%@_cover.png",timeStamp];
     videoName = [NSString stringWithFormat:@"%@_video.mp4",timeStamp];
     NSString *filePath = [NSTemporaryDirectory()stringByAppendingPathComponent:name];
-    NSString *videoPath = [NSTemporaryDirectory()stringByAppendingPathComponent:videoName];
-    //[[NSFileManager defaultManager] moveItemAtURL:outputPath toURL:videoPath error:nil];
     BOOL result =[UIImagePNGRepresentation(coverImage) writeToFile:filePath   atomically:YES]; // 保存成功会返回YES
     if (result == YES) {
       NSLog(@"视频封面保存成功");
-      NSLog(@"视频导出到本地完成,沙盒路径为:%@",outputPath);
-        self.resolveBlock(@{@"coverImage":filePath,@"videoPath":outputPath});
-        self.resolveBlock = nil;
+      NSLog(@"视频导出到本地完成,沙盒路径为:%@",url.absoluteString);
+      self.resolveBlock(@{@"coverImage":filePath,@"videoPath":url.absoluteString});
+      self.resolveBlock = nil;
+      [self->_assetDic setValue:outAsset forKey:url.absoluteString];
     }else{
       if(self.rejectBlock){
-            self.rejectBlock(@"-5", @"封面保存失败", nil);
-            self.rejectBlock = nil;
-          }
+        self.rejectBlock(@"-5", @"封面保存失败", nil);
+        self.rejectBlock = nil;
+      }
     }
-    [SVProgressHUD dismiss];
-  } failure:^(NSString *errorMessage, NSError *error) {
-    NSLog(@"视频导出失败:%@,error:%@",errorMessage, error);
-    if(self.rejectBlock){
-       self.rejectBlock(@"-4", @"视频导出失败", nil);
-       self.rejectBlock = nil;
-     }
-    [SVProgressHUD dismiss];
   }];
+  // open this code to send video / 打开这段代码发送视频
+//  [[TZImageManager manager] getVideoOutputPathWithAsset:asset presetName:AVAssetExportPresetMediumQuality success:^(NSString *outputPath) {
+//    // NSData *data = [NSData dataWithContentsOfFile:outputPath];
+//    NSArray* arr = [outputPath componentsSeparatedByString:@"/"];
+//    NSString* videoName = arr.lastObject;
+//    arr = [videoName componentsSeparatedByString:@"."];
+//    NSString* timeStamp = [self getNowTimeTimestamp];
+//    NSString* name = [NSString stringWithFormat:@"%@_cover.png",timeStamp];
+//    videoName = [NSString stringWithFormat:@"%@_video.mp4",timeStamp];
+//    NSString *filePath = [NSTemporaryDirectory()stringByAppendingPathComponent:name];
+//    NSString *videoPath = [NSTemporaryDirectory()stringByAppendingPathComponent:videoName];
+//
+//
+//    //[[NSFileManager defaultManager] moveItemAtURL:outputPath toURL:videoPath error:nil];
+//    BOOL result =[UIImagePNGRepresentation(coverImage) writeToFile:filePath   atomically:YES]; // 保存成功会返回YES
+//    if (result == YES) {
+//      NSLog(@"视频封面保存成功");
+//      NSLog(@"视频导出到本地完成,沙盒路径为:%@",outputPath);
+//      self.resolveBlock(@{@"coverImage":filePath,@"videoPath":outputPath});
+//      self.resolveBlock = nil;
+//    }else{
+//      if(self.rejectBlock){
+//        self.rejectBlock(@"-5", @"封面保存失败", nil);
+//        self.rejectBlock = nil;
+//      }
+//    }
+//    [SVProgressHUD dismiss];
+//  } failure:^(NSString *errorMessage, NSError *error) {
+//    NSLog(@"视频导出失败:%@,error:%@",errorMessage, error);
+//    if(self.rejectBlock){
+//      self.rejectBlock(@"-4", @"视频导出失败", nil);
+//      self.rejectBlock = nil;
+//    }
+//    [SVProgressHUD dismiss];
+//  }];
 }
 
 - (BOOL)isAssetCanSelect:(PHAsset *)asset{
@@ -206,13 +257,13 @@ RCT_REMAP_METHOD(pickVideo,
 
 
 -(NSString *)getNowTimeTimestamp{
-
-    NSDate *datenow = [NSDate date];//现在时间,你可以输出来看下是什么格式
-
-    NSString *timeSp = [NSString stringWithFormat:@"%ld", (long)[datenow timeIntervalSince1970]];
-
-    return timeSp;
-
+  
+  NSDate *datenow = [NSDate date];//现在时间,你可以输出来看下是什么格式
+  
+  NSString *timeSp = [NSString stringWithFormat:@"%ld", (long)[datenow timeIntervalSince1970]];
+  
+  return timeSp;
+  
 }
 
 #pragma mark - react module

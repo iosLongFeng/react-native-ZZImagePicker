@@ -21,4 +21,12 @@ export default {
   pickVideo(maxVideoTime = 120, useCamera = true) {
     return ZZImagePicker.pickVideo({maxVideoTime, useCamera});
   },
+  /**
+   * 压缩视频
+   * @param 视频地址
+   * @returns {*}
+   */
+  zipVideo(url) {
+    return ZZImagePicker.zipVideo(url);
+  },
 };

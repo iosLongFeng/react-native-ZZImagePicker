@@ -28,6 +28,7 @@ import ZZImagePIcker from './ZZImagePicker/ZZImagePIcker';
 class App extends PureComponent {
   state = {
     images: [],
+    video: null,
   };
   render() {
     console.log(this.state.images);
@@ -41,13 +42,17 @@ class App extends PureComponent {
           <Text onPress={this._takeVideo} style={{fontSize: 20}}>
             take video
           </Text>
+
+          <Text onPress={this._zipVideo} style={{fontSize: 20}}>
+            zip video
+          </Text>
           {this.state.images.map(uri => {
             return (
               <Image
                 key={uri}
                 source={{uri}}
                 style={{width: 100, height: 200, backgroundColor: 'red'}}
-                resizeMode={"stretch"}
+                resizeMode={'stretch'}
               />
             );
           })}
@@ -76,11 +81,21 @@ class App extends PureComponent {
       let url = result.coverImage;
       this.setState({
         images: [url],
+        video: result,
       });
       // 选择成功
     } catch (err) {
       console.log(err);
       // 取消选择，err.message为"取消"
+    }
+  };
+
+  _zipVideo = async () => {
+    try {
+      let result = await ZZImagePIcker.zipVideo(this.state.video.videoPath);
+      console.log('压缩完成' + result);
+    } catch (e) {
+      console.log('压缩失败');
     }
   };
 }
