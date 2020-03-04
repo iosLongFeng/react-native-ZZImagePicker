@@ -26,10 +26,13 @@ import {
 } from 'react-native/Libraries/NewAppScreen';
 import ZZImagePIcker from './ZZImagePicker/ZZImagePIcker';
 class App extends PureComponent {
-  state = {images: []};
+  state = {
+    images: [],
+  };
   render() {
+    console.log(this.state.images);
     return (
-      <>
+      <View style={{flex: 1}}>
         <StatusBar barStyle="dark-content" />
         <SafeAreaView>
           <Text onPress={this._takePhoto} style={{fontSize: 20}}>
@@ -39,10 +42,17 @@ class App extends PureComponent {
             take video
           </Text>
           {this.state.images.map(uri => {
-            return <Image source={{uri}} style={{width: 100, height: 100}} />;
+            return (
+              <Image
+                key={uri}
+                source={{uri}}
+                style={{width: 100, height: 200, backgroundColor: 'red'}}
+                resizeMode={"stretch"}
+              />
+            );
           })}
         </SafeAreaView>
-      </>
+      </View>
     );
   }
   _takePhoto = async () => {
@@ -63,8 +73,9 @@ class App extends PureComponent {
     try {
       let result = await ZZImagePIcker.pickVideo(120, true);
       console.log(result);
+      let url = result.coverImage;
       this.setState({
-        images: [result.coverImage],
+        images: [url],
       });
       // 选择成功
     } catch (err) {

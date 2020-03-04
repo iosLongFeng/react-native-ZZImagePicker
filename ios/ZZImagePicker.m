@@ -156,8 +156,12 @@ RCT_REMAP_METHOD(pickVideo,
     NSArray* arr = [outputPath componentsSeparatedByString:@"/"];
     NSString* videoName = arr.lastObject;
     arr = [videoName componentsSeparatedByString:@"."];
-    NSString* name = [NSString stringWithFormat:@"%@.png",arr.firstObject];
+    NSString* timeStamp = [self getNowTimeTimestamp];
+    NSString* name = [NSString stringWithFormat:@"%@_cover.png",timeStamp];
+    videoName = [NSString stringWithFormat:@"%@_video.mp4",timeStamp];
     NSString *filePath = [NSTemporaryDirectory()stringByAppendingPathComponent:name];
+    NSString *videoPath = [NSTemporaryDirectory()stringByAppendingPathComponent:videoName];
+    //[[NSFileManager defaultManager] moveItemAtURL:outputPath toURL:videoPath error:nil];
     BOOL result =[UIImagePNGRepresentation(coverImage) writeToFile:filePath   atomically:YES]; // 保存成功会返回YES
     if (result == YES) {
       NSLog(@"视频封面保存成功");
@@ -194,6 +198,16 @@ RCT_REMAP_METHOD(pickVideo,
   
 }
 
+
+-(NSString *)getNowTimeTimestamp{
+
+    NSDate *datenow = [NSDate date];//现在时间,你可以输出来看下是什么格式
+
+    NSString *timeSp = [NSString stringWithFormat:@"%ld", (long)[datenow timeIntervalSince1970]];
+
+    return timeSp;
+
+}
 
 #pragma mark - react module
 RCT_EXPORT_MODULE();

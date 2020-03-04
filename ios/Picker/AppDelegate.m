@@ -29,7 +29,7 @@
 //  UINavigationController* nav = [[UINavigationController alloc] initWithRootViewController:[[RootViewController alloc] init]];
   self.window.rootViewController = rootViewController;
   [self.window makeKeyAndVisible];
-  //[ZZImagePicker clearCache];
+  [ZZImagePicker clearCache];
   return YES;
 }
 

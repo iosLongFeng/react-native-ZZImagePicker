@@ -26,6 +26,7 @@ import com.luck.picture.lib.config.PictureConfig;
 import com.luck.picture.lib.config.PictureMimeType;
 import com.luck.picture.lib.entity.LocalMedia;
 import com.luck.picture.lib.listener.OnResultCallbackListener;
+import com.luck.picture.lib.tools.PictureFileUtils;
 import com.picker.R;
 
 import java.io.File;
@@ -92,6 +93,8 @@ public class ZZImagePicker extends ReactContextBaseJavaModule {
 
     }
 
+
+
     private final ActivityEventListener mActivityEventListener = new BaseActivityEventListener() {
         @Override
         public void onActivityResult(Activity activity, int requestCode, int resultCode, final Intent data) {
@@ -110,12 +113,15 @@ public class ZZImagePicker extends ReactContextBaseJavaModule {
                     // 如果同时开启裁剪和压缩，则取压缩路径为准因为是先裁剪后压缩
                     WritableArray videoList = new WritableNativeArray();
                     for (LocalMedia media : selectList) {
-//                        Log.i(TAG, "压缩::" + media.getCompressPath());
-//                        Log.i(TAG, "原图::" + media.getPath());
-//                        Log.i(TAG, "裁剪::" + media.getCutPath());
-//                        Log.i(TAG, "是否开启原图::" + media.isOriginal());
-//                        Log.i(TAG, "原图路径::" + media.getOriginalPath());
-//                        Log.i(TAG, "Android Q 特有Path::" + media.getAndroidQToPath());
+                        Log.i(TAG, "压缩::" + media.getCompressPath());
+                        Log.i(TAG, "原图::" + media.getPath());
+                        Log.i(TAG, "裁剪::" + media.getCutPath());
+                        Log.i(TAG, "是否开启原图::" + media.isOriginal());
+                        Log.i(TAG, "原图路径::" + media.getOriginalPath());
+                        Log.i(TAG, "图片大小:" + media.getSize());
+                        Log.i(TAG, "Android Q 特有Path::" + media.getAndroidQToPath());
+                        File file = new File(media.getCompressPath());
+                        Log.i(TAG, "压缩图片大小:" + file.length());
                         if (media.isOriginal()) {
                             videoList.pushString("file://" + media.getPath());
                         } else {

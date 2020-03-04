@@ -103,6 +103,7 @@
     // NSData *data = [NSData dataWithContentsOfFile:outputPath];
     NSArray* arr = [outputPath componentsSeparatedByString:@"/"];
     NSString* name = [NSString stringWithFormat:@"%@.png",arr.lastObject];
+    name=[name stringByReplacingOccurrencesOfString:@"-" withString:@""];
     NSString *filePath = [NSTemporaryDirectory()stringByAppendingPathComponent:name];
     BOOL result =[UIImagePNGRepresentation(coverImage) writeToFile:filePath   atomically:YES]; // 保存成功会返回YES
     if (result == YES) {
