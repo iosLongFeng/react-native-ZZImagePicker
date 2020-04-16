@@ -6,6 +6,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.media.MediaMetadataRetriever;
+import android.media.ThumbnailUtils;
+import android.os.Build;
 import android.os.Environment;
 import android.util.Log;
 
@@ -34,7 +36,11 @@ import com.picker.R;
 import com.vincent.videocompressor.VideoCompress;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -42,18 +48,24 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Locale;
 
+import io.microshow.rxffmpeg.RxFFmpegCommandList;
+import io.microshow.rxffmpeg.RxFFmpegInvoke;
+import io.microshow.rxffmpeg.RxFFmpegSubscriber;
+
 import static android.app.Activity.RESULT_OK;
+import static android.provider.MediaStore.Video.Thumbnails.MINI_KIND;
 
 public class ZZImagePicker extends ReactContextBaseJavaModule {
     private static final String TAG = "ZZImagePicker";
     private Promise mPickerPromise;
     private ReactApplicationContext reactContext;
-    private  LoadingDialog loadingDialog;
+    private LoadingDialog loadingDialog;
+    private MyRxFFmpegSubscriber myRxFFmpegSubscriber;
+
     public ZZImagePicker(@NonNull ReactApplicationContext reactContext) {
         super(reactContext);
         this.reactContext = reactContext;
         reactContext.addActivityEventListener(mActivityEventListener);
-
 
 
     }
@@ -101,55 +113,148 @@ public class ZZImagePicker extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void zipVideo(String path,Promise promise) {
+    public void zipVideo(String path, Promise promise) throws IOException {
         String PACKAGE_NAME = reactContext.getPackageName();
-        String compressDir = Environment.getExternalStorageDirectory().toString() +  "/Android/data/" + PACKAGE_NAME+"/files/videos/";
+        String compressDir = Environment.getExternalStorageDirectory().toString() + "/Android/data/" + PACKAGE_NAME + "/files/videos/";
         checkFolderExists(compressDir);
         Calendar now = new GregorianCalendar();
         SimpleDateFormat simpleDate = new SimpleDateFormat("yyyyMMddHHmmss", Locale.getDefault());
         String fileName = simpleDate.format(now.getTime());
         final String compressVideoPath = compressDir + fileName + ".mp4";
-        path = path.replaceAll("file://","");
-        VideoCompress.compressVideoMedium(path, compressVideoPath, new VideoCompress.CompressListener() {
-            @Override
-            public void onStart() {
-                Log.i(TAG, "onStart: ");
-            }
+        path = path.replaceAll("file://", "");
+        File file = new File(path);
+        FileInputStream fis = new FileInputStream(file);
+        long size = fis.available();
+        if(size<= 1024*1024*10){
+            //Log.i(TAG, "压缩开始压缩开始压缩开始" );
+            VideoCompress.compressVideoMedium(path, compressVideoPath, new VideoCompress.CompressListener() {
+                @Override
+                public void onStart() {
+                    Log.i(TAG, "onStart: ");
+                }
 
-            @Override
-            public void onSuccess() {
-                Log.i(TAG, "压缩成功" + compressVideoPath);
-                promise.resolve("file://"+compressVideoPath);
+                @Override
+                public void onSuccess() {
+                    Log.i(TAG, "压缩成功" + compressVideoPath);
+                    promise.resolve("file://"+compressVideoPath);
 
-            }
 
-            @Override
-            public void onFail() {
-                loadingDialog.dismiss();
 
-                Log.i(TAG, "onFail:");
-                ZZImagePicker.this.mPickerPromise.reject("-6", "压缩视频失败");
-                promise.reject("-10","压缩失败");
+                }
 
-            }
+                @Override
+                public void onFail() {
+                    loadingDialog.dismiss();
 
-            @Override
-            public void onProgress(float percent) {
+                    Log.i(TAG, "onFail:");
+                    ZZImagePicker.this.mPickerPromise.reject("-6", "压缩视频失败");
+                    promise.reject("-10","压缩失败");
 
-            }
-        });
+                }
+
+                @Override
+                public void onProgress(float percent) {
+
+                }
+            });
+
+        }else{
+            //Log.i(TAG, "压缩开始压缩开始压缩开始" );
+            VideoCompress.compressVideoLow(path, compressVideoPath, new VideoCompress.CompressListener() {
+                @Override
+                public void onStart() {
+                    Log.i(TAG, "onStart: ");
+                }
+
+                @Override
+                public void onSuccess() {
+
+                    File file = new File(compressVideoPath);
+                    FileInputStream fis = null;
+                    try {
+                        fis = new FileInputStream(file);
+                        long size = fis.available();
+                        if(size >= 1024*1024*5){
+                            zipVideo(compressVideoPath,promise);
+                        }else{
+                            Log.i(TAG, "压缩成功" + compressVideoPath);
+                            promise.resolve("file://"+compressVideoPath);
+                        }
+
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                }
+
+                @Override
+                public void onFail() {
+                    loadingDialog.dismiss();
+
+                    Log.i(TAG, "onFail:");
+                    ZZImagePicker.this.mPickerPromise.reject("-6", "压缩视频失败");
+                    promise.reject("-10","压缩失败");
+
+                }
+
+                @Override
+                public void onProgress(float percent) {
+
+                }
+            });
+        }
+
+//        Log.i(TAG, "压缩输出压缩输出压缩输出压缩输出压缩输出" + compressVideoPath);
+//
+//        String text = "ffmpeg -y -i " + path + " -b 2097k -r 30 -vcodec libx264 -preset superfast "+compressVideoPath;
+//
+//        String[] commands = text.split(" ");
+//
+//        myRxFFmpegSubscriber = new MyRxFFmpegSubscriber();
+//
+//        //开始执行FFmpeg命令
+//        RxFFmpegInvoke.getInstance()
+//                .runCommandRxJava(commands)
+//                .subscribe(myRxFFmpegSubscriber);
 
 
     }
 
-    public static void clearCache(Context context){
+    public static class MyRxFFmpegSubscriber extends RxFFmpegSubscriber {
+
+
+        @Override
+        public void onFinish() {
+            Log.d(TAG, "onFinish: 压缩成功");
+        }
+
+        @Override
+        public void onProgress(int progress, long progressTime) {
+            Log.d(TAG, "onProgress: 压缩成功");
+        }
+
+        @Override
+        public void onCancel() {
+            Log.d(TAG, "onCancel: 压缩成功");
+        }
+
+        @Override
+        public void onError(String message) {
+            Log.d(TAG, "onError: 压缩成功");
+        }
+    }
+
+
+
+
+    public static void clearCache(Context context) {
         Log.i(TAG, "clearCache: 111");
         PictureFileUtils.deleteCacheDirFile(context, PictureMimeType.ofImage());
         PictureFileUtils.deleteCacheDirFile(context, PictureMimeType.ofVideo());
         //清除所有缓存实例：压缩，缩小，视频，音频所生成的临时文件
         PictureFileUtils.deleteAllCacheDirFile(context);
         String PACKAGE_NAME = context.getPackageName();
-        String  dir = Environment.getExternalStorageDirectory().toString() +  "/Android/data/" + PACKAGE_NAME+"/files/Pictures";
+        String dir = Environment.getExternalStorageDirectory().toString() + "/Android/data/" + PACKAGE_NAME + "/files/Pictures";
         File cutDir = new File(dir);
         Log.i(TAG, "clearCache: 222");
         if (cutDir != null) {
@@ -165,7 +270,7 @@ public class ZZImagePicker extends ReactContextBaseJavaModule {
             }
         }
 
-        dir = Environment.getExternalStorageDirectory().toString() +  "/Android/data/" + PACKAGE_NAME+"/files/videos";
+        dir = Environment.getExternalStorageDirectory().toString() + "/Android/data/" + PACKAGE_NAME + "/files/videos";
         cutDir = new File(dir);
         if (cutDir != null) {
             Log.i(TAG, "clearCache: ");
@@ -181,7 +286,6 @@ public class ZZImagePicker extends ReactContextBaseJavaModule {
         }
 
     }
-
 
 
     private final ActivityEventListener mActivityEventListener = new BaseActivityEventListener() {
@@ -223,43 +327,54 @@ public class ZZImagePicker extends ReactContextBaseJavaModule {
                     loadingDialog = LoadingDialog.getInstance(getCurrentActivity());
                     loadingDialog.show();
 
-                            List<LocalMedia> mVideoSelectList = PictureSelector.obtainMultipleResult(data);
-                            WritableMap videoMap = new WritableNativeMap();
-                            LocalMedia media = mVideoSelectList.get(0);
-                            Log.i(TAG, "视频路径 " + media.getPath());
+                    List<LocalMedia> mVideoSelectList = PictureSelector.obtainMultipleResult(data);
+                    WritableMap videoMap = new WritableNativeMap();
+                    LocalMedia media = mVideoSelectList.get(0);
+                    Log.i(TAG, "视频路径 " + media.getPath());
 
-                            Calendar now = new GregorianCalendar();
-                            SimpleDateFormat simpleDate = new SimpleDateFormat("yyyyMMddHHmmss", Locale.getDefault());
-                            String fileName = simpleDate.format(now.getTime());
-                            String dir = Environment.getExternalStorageDirectory().toString();
-                            String PACKAGE_NAME = reactContext.getPackageName();
-                            dir = Environment.getExternalStorageDirectory().toString() +  "/Android/data/" + PACKAGE_NAME+"/files/Pictures/";
-                            checkFolderExists(dir);
+                    Calendar now = new GregorianCalendar();
+                    SimpleDateFormat simpleDate = new SimpleDateFormat("yyyyMMddHHmmss", Locale.getDefault());
+                    String fileName = simpleDate.format(now.getTime());
+                    String dir = Environment.getExternalStorageDirectory().toString();
+                    String PACKAGE_NAME = reactContext.getPackageName();
+                    dir = Environment.getExternalStorageDirectory().toString() + "/Android/data/" + PACKAGE_NAME + "/files/Pictures/";
+                    checkFolderExists(dir);
 
-                            try {
-                                MediaMetadataRetriever media1 = new MediaMetadataRetriever();
-                                media1.setDataSource(media.getPath());
-                                Bitmap bitmap = media1.getFrameAtTime();
-                                File file = new File(dir + fileName + ".jpg");
-                                Log.i(TAG, "视频封面地址 "+file.toString());
-                                FileOutputStream out = new FileOutputStream(file);
-                                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
-                                out.flush();
-                                out.close();
-                                videoMap.putString("coverImage","file://" + file.toString());
-                                videoMap.putString("videoPath","file://" + media.getPath());
+                    try {
 
-                                ZZImagePicker.this.mPickerPromise.resolve(videoMap);
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                                ZZImagePicker.this.mPickerPromise.reject("-5", "获取视频封面失败");
-                            }finally {
-
-                                loadingDialog.dismiss();
-
-                            }
-
+//                                MediaMetadataRetriever media1 = new MediaMetadataRetriever();
+//                                media1.setDataSource(media.getPath());
+//                                Bitmap bitmap = media1.getFrameAtTime();
+                        String videoPath = media.getPath();
+                        if ((Build.VERSION.SDK_INT > Build.VERSION_CODES.P)) {
+                            videoPath = media.getAndroidQToPath();
                         }
+
+                        Bitmap bitmap = getVideoThumbnail(videoPath, MINI_KIND, 100, 100);
+                        if (bitmap == null) {
+                            Log.d(TAG, "onActivityResult: 获取封面图为空");
+                        }
+                        File file = new File(dir + fileName + ".jpg");
+                        Log.i(TAG, "视频封面地址 " + file.toString());
+                        FileOutputStream out = new FileOutputStream(file);
+                        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
+                        out.flush();
+                        out.close();
+                        videoMap.putString("coverImage", "file://" + file.toString());
+                        videoMap.putString("videoPath", "file://" + videoPath);
+
+
+                        ZZImagePicker.this.mPickerPromise.resolve(videoMap);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        ZZImagePicker.this.mPickerPromise.reject("-5", "获取视频封面失败");
+                    } finally {
+
+                        loadingDialog.dismiss();
+
+                    }
+
+                }
 
             } else {
                 ZZImagePicker.this.mPickerPromise.reject("-3", "用户取消选择");
@@ -269,16 +384,25 @@ public class ZZImagePicker extends ReactContextBaseJavaModule {
         }
     };
 
-    private void checkFolderExists(String strFolder)
-    {
+    private void checkFolderExists(String strFolder) {
         File file = new File(strFolder);
-        if (!file.exists())
-        {
+        if (!file.exists()) {
             file.mkdir();
         }
 
     }
 
+    private Bitmap getVideoThumbnail(String videoPath, int kind, int width, int height) {
+        Bitmap bitmap = null;
+        // 获取视频的缩略图
+        bitmap = ThumbnailUtils.createVideoThumbnail(videoPath, kind);
+        if (width > 0 && height > 0) {
+            bitmap = ThumbnailUtils.extractThumbnail(bitmap, width, height,
+                    ThumbnailUtils.OPTIONS_RECYCLE_INPUT);
+        }
+
+        return bitmap;
+    }
 
 
 }

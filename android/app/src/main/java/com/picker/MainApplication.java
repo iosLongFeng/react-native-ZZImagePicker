@@ -13,6 +13,8 @@ import com.picker.zzImagePicker.ZZImagePicker;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
+import io.microshow.rxffmpeg.RxFFmpegInvoke;
+
 public class MainApplication extends Application implements ReactApplication {
 
   private final ReactNativeHost mReactNativeHost =
@@ -48,6 +50,7 @@ public class MainApplication extends Application implements ReactApplication {
     SoLoader.init(this, /* native exopackage */ false);
     initializeFlipper(this); // Remove this line if you don't want Flipper enabled
       ZZImagePicker.clearCache(this);
+      RxFFmpegInvoke.getInstance().setDebug(true);
   }
 
   /**

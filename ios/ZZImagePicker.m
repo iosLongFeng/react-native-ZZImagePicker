@@ -75,6 +75,7 @@ RCT_REMAP_METHOD(zipVideo,
  
   [[TZImageManager manager] getVideoOutputPathWithAsset:_assetDic[zipUrl] presetName:AVAssetExportPresetMediumQuality success:^(NSString *outputPath) {
     resolve(outputPath);
+    NSLog(@"压缩成功   %@",outputPath);
    
   } failure:^(NSString *errorMessage, NSError *error) {
     reject(@"-10",@"压缩失败",nil);
