@@ -15,6 +15,7 @@ import {
   Text,
   StatusBar,
   Image,
+  NativeModules,
 } from 'react-native';
 
 import {
@@ -25,6 +26,7 @@ import {
   ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
 import ZZImagePIcker from './ZZImagePicker/ZZImagePIcker';
+let appCommonMoudle = NativeModules.APPCommonMoudle;
 class App extends PureComponent {
   state = {
     images: [],
@@ -36,15 +38,20 @@ class App extends PureComponent {
       <View style={{flex: 1}}>
         <StatusBar barStyle="dark-content" />
         <SafeAreaView>
-          <Text onPress={this._takePhoto} style={{fontSize: 20}}>
+          <Text onPress={this._takePhoto} style={{fontSize: 20, marginTop: 10}}>
             take phooto
           </Text>
-          <Text onPress={this._takeVideo} style={{fontSize: 20}}>
+          <Text onPress={this._takeVideo} style={{fontSize: 20, marginTop: 10}}>
             take video
           </Text>
 
-          <Text onPress={this._zipVideo} style={{fontSize: 20}}>
-            zip video
+          <Text onPress={this._zipVideo} style={{fontSize: 20, marginTop: 10}}>
+            zip video111
+          </Text>
+          <Text
+            onPress={this._uploadFile}
+            style={{fontSize: 20, marginTop: 10}}>
+            upload file
           </Text>
           {this.state.images.map(uri => {
             return (
@@ -62,7 +69,7 @@ class App extends PureComponent {
   }
   _takePhoto = async () => {
     try {
-      let result = await ZZImagePIcker.pickPhoto(2, true, true);
+      let result = await ZZImagePIcker.pickPhoto(4, true, true);
       this.setState({
         images: result,
       });
@@ -96,6 +103,16 @@ class App extends PureComponent {
       console.log('压缩完成' + result);
     } catch (e) {
       console.log('压缩失败');
+    }
+  };
+
+  _uploadFile = async () => {
+    try {
+      //let path = await ZZImagePIcker.zipVideo(this.state.video.videoPath)
+      let result = await appCommonMoudle.uploadFileArr(this.state.images);
+      console.log('上传成功' + result);
+    } catch (e) {
+      console.log('上传失败');
     }
   };
 }

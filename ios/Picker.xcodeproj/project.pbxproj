@@ -18,6 +18,8 @@
 		2D02E4BF1E0B4AB3006451C7 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		2DAAE8E92BF74E1FCDF2A1FB /* libPods-Picker-tvOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 655C6BCF27BFC056A5AF071C /* libPods-Picker-tvOS.a */; };
 		2DCD954D1E0B4F2C00145EB5 /* PickerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E356F21AD99517003FC87E /* PickerTests.m */; };
+		4F24547624495C560044D882 /* OSSManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 4F24547524495C560044D882 /* OSSManager.m */; };
+		4F24547924497D480044D882 /* APPCommonMoudle.m in Sources */ = {isa = PBXBuildFile; fileRef = 4F24547824497D480044D882 /* APPCommonMoudle.m */; };
 		4FF7CC5E240CAA0000B2C387 /* RootViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4FF7CC5D240CA9FF00B2C387 /* RootViewController.m */; };
 		4FF7CC63240CE46A00B2C387 /* TZImageUploadOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 4FF7CC62240CE46A00B2C387 /* TZImageUploadOperation.m */; };
 		4FF7CC66240CF8EE00B2C387 /* CompressImageTool.m in Sources */ = {isa = PBXBuildFile; fileRef = 4FF7CC65240CF8EE00B2C387 /* CompressImageTool.m */; };
@@ -58,6 +60,10 @@
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = Picker/main.m; sourceTree = "<group>"; };
 		2D02E47B1E0B4A5D006451C7 /* Picker-tvOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Picker-tvOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		2D02E4901E0B4A5D006451C7 /* Picker-tvOSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Picker-tvOSTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		4F24547424495C560044D882 /* OSSManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = OSSManager.h; sourceTree = "<group>"; };
+		4F24547524495C560044D882 /* OSSManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = OSSManager.m; sourceTree = "<group>"; };
+		4F24547724497D480044D882 /* APPCommonMoudle.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = APPCommonMoudle.h; sourceTree = "<group>"; };
+		4F24547824497D480044D882 /* APPCommonMoudle.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = APPCommonMoudle.m; sourceTree = "<group>"; };
 		4FF7CC5C240CA9FF00B2C387 /* RootViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RootViewController.h; sourceTree = "<group>"; };
 		4FF7CC5D240CA9FF00B2C387 /* RootViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RootViewController.m; sourceTree = "<group>"; };
 		4FF7CC61240CE46A00B2C387 /* TZImageUploadOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TZImageUploadOperation.h; sourceTree = "<group>"; };
@@ -137,6 +143,7 @@
 		13B07FAE1A68108700A75B9A /* Picker */ = {
 			isa = PBXGroup;
 			children = (
+				4F245473244958820044D882 /* oss */,
 				4FF7CC64240CF8EE00B2C387 /* CompressImageTool.h */,
 				4FF7CC65240CF8EE00B2C387 /* CompressImageTool.m */,
 				4FF7CC61240CE46A00B2C387 /* TZImageUploadOperation.h */,
@@ -182,6 +189,17 @@
 				F90BEEA4B07C70C0CD023128 /* Pods-PickerTests.release.xcconfig */,
 			);
 			path = Pods;
+			sourceTree = "<group>";
+		};
+		4F245473244958820044D882 /* oss */ = {
+			isa = PBXGroup;
+			children = (
+				4F24547424495C560044D882 /* OSSManager.h */,
+				4F24547524495C560044D882 /* OSSManager.m */,
+				4F24547724497D480044D882 /* APPCommonMoudle.h */,
+				4F24547824497D480044D882 /* APPCommonMoudle.m */,
+			);
+			path = oss;
 			sourceTree = "<group>";
 		};
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
@@ -575,7 +593,9 @@
 			files = (
 				13B07FBC1A68108700A75B9A /* AppDelegate.m in Sources */,
 				4FF7CC69240DEFE000B2C387 /* ZZImagePicker.m in Sources */,
+				4F24547624495C560044D882 /* OSSManager.m in Sources */,
 				13B07FC11A68108700A75B9A /* main.m in Sources */,
+				4F24547924497D480044D882 /* APPCommonMoudle.m in Sources */,
 				4FF7CC63240CE46A00B2C387 /* TZImageUploadOperation.m in Sources */,
 				4FF7CC66240CF8EE00B2C387 /* CompressImageTool.m in Sources */,
 				4FF7CC5E240CAA0000B2C387 /* RootViewController.m in Sources */,

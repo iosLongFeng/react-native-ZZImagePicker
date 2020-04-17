@@ -12,6 +12,12 @@
 #import <React/RCTRootView.h>
 #import "RootViewController.h"
 #import "ZZImagePicker.h"
+#import "OSSManager.h"
+@interface AppDelegate ()
+
+
+@end
+
 @implementation AppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
@@ -30,6 +36,8 @@
   self.window.rootViewController = rootViewController;
   [self.window makeKeyAndVisible];
   [ZZImagePicker clearCache];
+
+  [[OSSManager sharedSingleton] config];
   return YES;
 }
 

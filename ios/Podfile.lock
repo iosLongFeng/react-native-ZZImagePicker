@@ -1,4 +1,5 @@
 PODS:
+  - AliyunOSSiOS (2.10.8)
   - boost-for-react-native (1.63.0)
   - DoubleConversion (1.1.6)
   - FBLazyVector (0.61.5)
@@ -222,6 +223,7 @@ PODS:
   - Yoga (1.14.0)
 
 DEPENDENCIES:
+  - AliyunOSSiOS
   - DoubleConversion (from `../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec`)
   - FBLazyVector (from `../node_modules/react-native/Libraries/FBLazyVector`)
   - FBReactNativeSpec (from `../node_modules/react-native/Libraries/FBReactNativeSpec`)
@@ -255,6 +257,7 @@ DEPENDENCIES:
 
 SPEC REPOS:
   trunk:
+    - AliyunOSSiOS
     - boost-for-react-native
     - SVProgressHUD
     - TZImagePickerController
@@ -312,6 +315,7 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
 SPEC CHECKSUMS:
+  AliyunOSSiOS: 8db92936545593b9e5c66d680ef2ac0738946651
   boost-for-react-native: 39c7adb57c4e60d6c5479dd8623128eb5b3f0f2c
   DoubleConversion: 5805e889d232975c086db112ece9ed034df7a0b2
   FBLazyVector: aaeaf388755e4f29cd74acbc9e3b8da6d807c37f
@@ -341,6 +345,6 @@ SPEC CHECKSUMS:
   TZImagePickerController: 99f03b64145a8c92c55b9b1b931410967d9be4cb
   Yoga: f2a7cd4280bfe2cca5a7aed98ba0eb3d1310f18b
 
-PODFILE CHECKSUM: 83ce0da5603685f5831d61f33b2b3eb639cc2151
+PODFILE CHECKSUM: d4d4a5a32f7b31ca0e1ea05c9def32bd4ccd226b
 
 COCOAPODS: 1.8.4
