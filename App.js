@@ -108,9 +108,18 @@ class App extends PureComponent {
 
   _uploadFile = async () => {
     try {
-      //let path = await ZZImagePIcker.zipVideo(this.state.video.videoPath)
-      let result = await appCommonMoudle.uploadFileArr(this.state.images);
-      console.log('上传成功' + result);
+      let arr = [];
+      if (this.state.images) {
+        arr = this.state.images;
+      }
+      if (this.state.video) {
+        console.log('视频压缩开始');
+        let path = await ZZImagePIcker.zipVideo(this.state.video.videoPath);
+        arr.push(path);
+        console.log('视频压缩jieshu');
+      }
+      let result = await appCommonMoudle.uploadFileArr(arr);
+      console.log('上传成功上传成功上传成功' + result);
     } catch (e) {
       console.log('上传失败');
     }

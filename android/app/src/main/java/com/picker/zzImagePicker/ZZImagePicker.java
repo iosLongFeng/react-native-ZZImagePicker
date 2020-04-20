@@ -48,9 +48,7 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Locale;
 
-import io.microshow.rxffmpeg.RxFFmpegCommandList;
-import io.microshow.rxffmpeg.RxFFmpegInvoke;
-import io.microshow.rxffmpeg.RxFFmpegSubscriber;
+
 
 import static android.app.Activity.RESULT_OK;
 import static android.provider.MediaStore.Video.Thumbnails.MINI_KIND;
@@ -60,7 +58,6 @@ public class ZZImagePicker extends ReactContextBaseJavaModule {
     private Promise mPickerPromise;
     private ReactApplicationContext reactContext;
     private LoadingDialog loadingDialog;
-    private MyRxFFmpegSubscriber myRxFFmpegSubscriber;
 
     public ZZImagePicker(@NonNull ReactApplicationContext reactContext) {
         super(reactContext);
@@ -126,7 +123,7 @@ public class ZZImagePicker extends ReactContextBaseJavaModule {
         FileInputStream fis = new FileInputStream(file);
         long size = fis.available();
         if(size<= 1024*1024*10){
-            //Log.i(TAG, "压缩开始压缩开始压缩开始" );
+            Log.d(TAG, "压缩开始压缩开始压缩开始1111111" );
             VideoCompress.compressVideoMedium(path, compressVideoPath, new VideoCompress.CompressListener() {
                 @Override
                 public void onStart() {
@@ -157,9 +154,10 @@ public class ZZImagePicker extends ReactContextBaseJavaModule {
 
                 }
             });
+            Log.d(TAG, "压缩开始压缩开始压缩开始2222222222" );
 
         }else{
-            //Log.i(TAG, "压缩开始压缩开始压缩开始" );
+            Log.d(TAG, "压缩开始压缩开始压缩开始1111111" );
             VideoCompress.compressVideoLow(path, compressVideoPath, new VideoCompress.CompressListener() {
                 @Override
                 public void onStart() {
@@ -202,46 +200,9 @@ public class ZZImagePicker extends ReactContextBaseJavaModule {
 
                 }
             });
+            Log.d(TAG, "压缩开始压缩开始压缩开始2222222222" );
         }
 
-//        Log.i(TAG, "压缩输出压缩输出压缩输出压缩输出压缩输出" + compressVideoPath);
-//
-//        String text = "ffmpeg -y -i " + path + " -b 2097k -r 30 -vcodec libx264 -preset superfast "+compressVideoPath;
-//
-//        String[] commands = text.split(" ");
-//
-//        myRxFFmpegSubscriber = new MyRxFFmpegSubscriber();
-//
-//        //开始执行FFmpeg命令
-//        RxFFmpegInvoke.getInstance()
-//                .runCommandRxJava(commands)
-//                .subscribe(myRxFFmpegSubscriber);
-
-
-    }
-
-    public static class MyRxFFmpegSubscriber extends RxFFmpegSubscriber {
-
-
-        @Override
-        public void onFinish() {
-            Log.d(TAG, "onFinish: 压缩成功");
-        }
-
-        @Override
-        public void onProgress(int progress, long progressTime) {
-            Log.d(TAG, "onProgress: 压缩成功");
-        }
-
-        @Override
-        public void onCancel() {
-            Log.d(TAG, "onCancel: 压缩成功");
-        }
-
-        @Override
-        public void onError(String message) {
-            Log.d(TAG, "onError: 压缩成功");
-        }
     }
 
 

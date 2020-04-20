@@ -13,8 +13,8 @@ NS_ASSUME_NONNULL_BEGIN
 @interface OSSManager : NSObject
 + (instancetype)sharedSingleton;
 -(void)config;
--(void)uploadFile:(NSString*)filePath complect:(void(^)(NSString *))block;
--(NSString*)uploadFileArr:(NSArray*)fileArr;
+//-(void)uploadFile:(NSString*)filePath complect:(void(^)(NSString *))block;
+-(void)uploadFileArr:(NSArray*)fielArr complect:(void(^)(NSArray *))block;
 @end
 
 NS_ASSUME_NONNULL_END

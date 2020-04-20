@@ -63,7 +63,10 @@
 }
 
 -(void)uploadFile:(NSString*)filePath complect:(void(^)(NSString *))block{
-  if(filePath == nil || _client==nil) return;
+  if(filePath == nil || _client==nil){
+    block(nil);
+    return;
+  }
   NSString* fileType = [filePath pathExtension];
   NSString* name = [NSString stringWithFormat:@"%@.%@",[self uuidString],fileType];
   OSSPutObjectRequest * put = [OSSPutObjectRequest new];
@@ -85,6 +88,49 @@
     
     return nil;
   }];
+}
+
+-(void)uploadFileArr:(NSArray*)paths complect:(void(^)(NSArray *))block{
+  if(_client==nil){
+    block(nil);
+    [self config];
+    return;
+  }
+  NSMutableArray *imageURLs= [NSMutableArray array];
+  NSMutableDictionary* dic = [NSMutableDictionary dictionaryWithCapacity:paths.count];
+  dispatch_group_t group = dispatch_group_create();
+  for (NSString *path in paths) {
+      dispatch_group_enter(group);
+      [self uploadFile:path complect:^(NSString * _Nonnull remotePath) {
+       if(remotePath){
+         //resolve(remotePath);
+         dic[path] = remotePath;
+       }else{
+        // reject(@"-1",@"上传失败",nil);
+         dic[path] = @"";
+       }
+        dispatch_group_leave(group);
+     }];
+      
+  }
+  dispatch_group_notify(group,dispatch_get_main_queue(),^{
+    NSLog(@"上传完成");
+    bool haveFailure = false;
+    for (NSString* path in paths) {
+      if(path.length==0){
+        haveFailure = true;
+        break;
+      }
+      [imageURLs addObject: dic[path]];
+    }
+    if(haveFailure){
+       block(nil);
+    }else{
+      block(imageURLs);
+    }
+    
+  });
+  
 }
 
 
